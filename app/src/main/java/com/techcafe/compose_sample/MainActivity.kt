@@ -3,60 +3,94 @@ package com.techcafe.compose_sample
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.techcafe.compose_sample.ui.theme.ComposeSampleTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            NewStory()
-        }
-    }
-
-    @Composable
-    fun NewStory() {
-        MaterialTheme() {
-            val typograpy = MaterialTheme.typography
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.header),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(180.dp)
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(16.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "A day in Shark Fin Cove aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    style = typograpy.h6,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(text = "Hoge", style = typograpy.body2)
-                Text(text = "Fuga", style = typograpy.body2)
+            MyApp {
+                MyScreenContent()
             }
         }
     }
+}
 
-    @Preview
-    @Composable
-    fun DefaultPreview() {
-        NewStory()
+@Composable
+fun MyApp(content: @Composable () -> Unit) {
+    ComposeSampleTheme {
+        Surface(color = Color.Yellow) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun MyScreenContent(names: List<String> = List(100) { "Hello World $it" }) {
+    val counterState = remember { mutableStateOf(0) }
+
+    Column(modifier = Modifier.fillMaxHeight()) {
+        NameList(names = names, modifier = Modifier.weight(1f))
+        Counter(
+            count = counterState.value,
+            updateCount = { newCount ->
+                counterState.value = newCount
+            }
+        )
+    }
+}
+
+@Composable
+fun NameList(names: List<String>, modifier: Modifier = Modifier) {
+    LazyColumn(modifier = modifier) {
+        items(items = names) { name ->
+            Greeting(value = name)
+            Divider(color = Color.Black)
+        }
+    }
+}
+
+@Composable
+fun Greeting(value: String) {
+    var isSelected by remember { mutableStateOf(false) }
+    val backgroundColor by animateColorAsState(targetValue = if (isSelected) Color.Red else Color.Transparent)
+    Text(
+        text = "Hello $value",
+        modifier = Modifier
+            .padding(16.dp)
+            .background(backgroundColor)
+            .clickable(onClick = { isSelected = !isSelected })
+    )
+}
+
+@Preview("Text preview")
+@Composable
+fun DefaultPreview() {
+    MyApp {
+        MyScreenContent()
+    }
+}
+
+@Composable
+fun Counter(count: Int, updateCount: (Int) -> Unit) {
+    Button(onClick = { updateCount(count + 1) }) {
+        Text(text = "I've been clicked $count times")
     }
 }
